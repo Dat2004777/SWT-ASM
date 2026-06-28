@@ -2,6 +2,7 @@ package fu.swt301.sms.dao;
 
 import fu.swt301.sms.entity.Role;
 import fu.swt301.sms.entity.Staff;
+import fu.swt301.sms.entity.PageResult;
 import fu.swt301.sms.utils.DBUtils;
 
 import java.sql.Connection;
@@ -162,7 +163,58 @@ public class StaffDAO {
         return staffList;
     }
 
-    /**
+
+    public PageResult<Staff> search(String name, Integer staffId, String status, int requestedPage, int pageSize) {
+        StringBuilder where = new StringBuilder(" WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+        if (name != null && !name.isBlank()) {
+            where.append(" AND LOWER(s.FullName) LIKE LOWER(?)");
+            parameters.add("%" + name.trim() + "%");
+        }
+        if (staffId != null) {
+            where.append(" AND s.StaffID = ?");
+            parameters.add(staffId);
+        }
+        if (status != null && !status.isBlank()) {
+            where.append(" AND s.IsActive = ?");
+            parameters.add(Boolean.parseBoolean(status));
+        }
+        try (Connection connection = DBUtils.getConnection()) {
+            int totalItems;
+            try (PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM Staff s" + where)) {
+                bind(statement, parameters);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    resultSet.next();
+                    totalItems = resultSet.getInt(1);
+                }
+            }
+            int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / pageSize));
+            int page = Math.min(Math.max(1, requestedPage), totalPages);
+            List<Staff> items = new ArrayList<>();
+            String sql = "SELECT s.*, r.Role_Name FROM Staff s JOIN Role r ON s.Role_ID = r.Role_ID"
+                    + where + " ORDER BY s.StaffID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                bind(statement, parameters);
+                statement.setInt(parameters.size() + 1, (page - 1) * pageSize);
+                statement.setInt(parameters.size() + 2, pageSize);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) items.add(extractStaffFromResultSet(resultSet));
+                }
+            }
+            return new PageResult<>(items, page, pageSize, totalItems);
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException("Cannot search staff", e);
+        }
+    }
+
+    private void bind(PreparedStatement statement, List<Object> parameters) throws SQLException {
+        for (int i = 0; i < parameters.size(); i++) {
+            Object value = parameters.get(i);
+            if (value instanceof Integer) statement.setInt(i + 1, (Integer) value);
+            else if (value instanceof Boolean) statement.setBoolean(i + 1, (Boolean) value);
+            else statement.setString(i + 1, String.valueOf(value));
+        }
+    }    /**
      * Inserts a new staff member into the database.
      * @param staff The Staff object containing the data to be inserted.
      */
