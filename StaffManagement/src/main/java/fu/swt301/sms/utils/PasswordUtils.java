@@ -10,7 +10,7 @@ import org.mindrot.jbcrypt.BCrypt;
  *
  * @author dat20
  */
-public class PasswordUntils {
+public class PasswordUtils {
     /**
      * Hash a plain text password using jBCrypt.
      * @param plainPassword The plain text password to hash.

@@ -3,7 +3,7 @@ package fu.swt301.sms.dao;
 import fu.swt301.sms.entity.Role;
 import fu.swt301.sms.entity.Staff;
 import fu.swt301.sms.utils.DBUtils;
-import fu.swt301.sms.utils.PasswordUntils;
+import fu.swt301.sms.utils.PasswordUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -152,7 +152,7 @@ public class StaffDAO {
                 if (rs.next()) {
                     String hashedPasswordInDB = rs.getString("Password");
 
-                    if (PasswordUntils.verifyPassword(password, hashedPasswordInDB)) {
+                    if (PasswordUtils.verifyPassword(password, hashedPasswordInDB)) {
                         return extractStaffFromResultSet(rs);
                     }
                 }
