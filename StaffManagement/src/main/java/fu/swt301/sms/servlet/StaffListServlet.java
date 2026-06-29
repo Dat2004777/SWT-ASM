@@ -1,26 +1,43 @@
 package fu.swt301.sms.servlet;
 
 import fu.swt301.sms.dao.StaffDAO;
+import fu.swt301.sms.entity.PageResult;
 import fu.swt301.sms.entity.Staff;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/staff-list")
 public class StaffListServlet extends HttpServlet {
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String searchName = request.getParameter("searchName");
-        String searchStatus = request.getParameter("searchStatus");
-
-        StaffDAO staffDAO = new StaffDAO();
-        List<Staff> staffList = staffDAO.getStaffByFilter(searchName, searchStatus);
-
-        request.setAttribute("staffList", staffList);
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        Integer staffId = parseNullable(request.getParameter("staffId"));
+        int page = parsePage(request.getParameter("page"));
+        PageResult<Staff> result = new StaffDAO().search(
+                request.getParameter("searchName"), staffId,
+                request.getParameter("searchStatus"), page, 10);
+        request.setAttribute("staffList", result.getItems());
+        request.setAttribute("pageResult", result);
         request.getRequestDispatcher("staff-list.jsp").forward(request, response);
+    }
+
+    private Integer parseNullable(String value) {
+        try {
+            return value == null || value.isBlank() ? null : Integer.valueOf(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int parsePage(String value) {
+        try {
+            return Math.max(1, Integer.parseInt(value));
+        } catch (Exception e) {
+            return 1;
+        }
     }
 }
