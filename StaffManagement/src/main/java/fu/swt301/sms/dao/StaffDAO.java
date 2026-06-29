@@ -287,10 +287,12 @@ public class StaffDAO {
      *
      * @param staff The Staff object containing the data to be inserted.
      */
-    public void createStaff(Staff staff) {
+    public void createStaff(Staff staff) throws SQLException, ClassNotFoundException {
         String sql = "INSERT INTO Staff (StaffCode, FullName, DateOfBirth, Gender, PhoneNumber, Email, "
                 + "Password, Department, Position, Salary, HireDate, Role_ID, IsActive) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Let SQL/driver errors propagate so the service layer can surface them
+        // instead of silently swallowing a failed insert (FR-07 robustness).
         try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, staff.getStaffCode());
             ps.setString(2, staff.getFullName());
@@ -306,8 +308,6 @@ public class StaffDAO {
             ps.setInt(12, staff.getRole().getRoleID());
             ps.setBoolean(13, staff.isIsActive());
             ps.executeUpdate();
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
         }
     }
 

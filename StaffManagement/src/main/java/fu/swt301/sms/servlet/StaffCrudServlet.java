@@ -46,7 +46,7 @@ public class StaffCrudServlet extends HttpServlet {
                 errors = employeeService.createStaff(staff, password);
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
-                errors = Collections.singletonList("Database error during creation.");
+                errors = Collections.singletonList("Database error during creation: " + e.getMessage());
             }
             if (!errors.isEmpty()) {
                 forwardBackToForm(request, response, staff, String.join(" ", errors));
