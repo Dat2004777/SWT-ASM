@@ -24,8 +24,14 @@
                     <div class="col-auto"><button class="btn btn-primary">Search</button> <a
                             class="btn btn-outline-secondary" href="staff-list">Reset</a></div>
                 </form>
-                <div class="mb-3"><a href="staff-crud?action=create" class="btn btn-success">Add Staff</a><span
-                        class="float-right">${pageResult.totalItems} result(s)</span></div>
+                <div class="mb-3">
+                    <a href="${pageContext.request.contextPath}/staff-crud?action=create" class="btn btn-success">Add Staff</a>
+                     <a href="${pageContext.request.contextPath}/logout"
+                        class="btn btn-danger">
+                        Logout
+                    </a>
+                    <span class="float-right">${pageResult.totalItems} result(s)</span>
+                </div>
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
