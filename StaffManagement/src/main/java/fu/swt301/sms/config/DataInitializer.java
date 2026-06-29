@@ -1,7 +1,7 @@
 package fu.swt301.sms.config;
 
 import fu.swt301.sms.utils.DBUtils;
-import fu.swt301.sms.utils.PasswordUntils;
+import fu.swt301.sms.utils.PasswordUtils;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -165,28 +165,13 @@ public class DataInitializer implements ServletContextListener {
             ps.setString(3, "0123456789");
             ps.setString(4, "admin@example.com");
 
-            String hashedPassword = PasswordUntils.hashPassword("admin123");
+            String hashedPassword = PasswordUtils.hashPassword("admin123");
 
             ps.setString(5, hashedPassword); // WARNING: Plain text password
             ps.setInt(6, 1); // Role_ID for Admin
             ps.setBoolean(7, true); // IsActive
             ps.executeUpdate();
             System.out.println("Default admin user inserted.");
-        }
-
-        // 🎯 BỔ SUNG ĐOẠN NÀY: Tạo thêm 1 tài khoản Staff thường (Role_ID = 2) để test
-        String staffPassword = PasswordUntils.hashPassword("user123"); // Mật khẩu đăng nhập sẽ là user123
-
-        try (PreparedStatement ps = conn.prepareStatement("INSERT INTO Staff (FullName, Gender, PhoneNumber, Email, Password, Role_ID, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            ps.setString(1, "Nguyen Van A");
-            ps.setBoolean(2, true);
-            ps.setString(3, "0987654321");
-            ps.setString(4, "user@example.com"); // 🎯 Email dùng để đăng nhập test
-            ps.setString(5, staffPassword);     // Mật khẩu đã hash bằng jBCrypt
-            ps.setInt(6, 2);                     // 🎯 Role_ID = 2 tức là Staff thường
-            ps.setBoolean(7, true);
-            ps.executeUpdate();
-            System.out.println("Default staff user with hashed password inserted.");
         }
     }
 
