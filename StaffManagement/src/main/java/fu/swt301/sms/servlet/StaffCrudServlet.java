@@ -94,6 +94,20 @@ public class StaffCrudServlet extends HttpServlet {
             return;
         }
 
+        // --- view detail branch (FR-10) ---
+        if ("view".equals(action)) {
+            int staffId = parseInt(request.getParameter("id"), 0);
+            Staff staff = employeeService.getStaffById(staffId);
+            if (staff == null) {
+                // Invalid or unknown id: fall back to the list rather than a blank page.
+                response.sendRedirect("staff-list");
+                return;
+            }
+            request.setAttribute("staff", staff);
+            request.getRequestDispatcher("staff-detail.jsp").forward(request, response);
+            return;
+        }
+
         request.setAttribute("roleList", roleDAO.getAllRoles());
         if ("edit".equals(action)) {
             int staffId = Integer.parseInt(request.getParameter("id"));
