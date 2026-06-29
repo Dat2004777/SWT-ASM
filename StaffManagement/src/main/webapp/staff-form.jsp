@@ -22,8 +22,21 @@
             <input type="hidden" name="staffID" value="${staff.staffID}">
         </c:if>
         <div class="form-group">
+            <label for="staffCode">Staff Code</label>
+            <input type="text" class="form-control" id="staffCode" name="staffCode"
+                   value="<c:out value='${staff.staffCode}'/>" required maxlength="20"
+                   pattern="[A-Za-z0-9]{3,20}"
+                   title="3-20 letters or digits.">
+        </div>
+        <div class="form-group">
             <label for="fullName">Full Name</label>
-            <input type="text" class="form-control" id="fullName" name="fullName" value="${staff.fullName}" required maxlength="100">
+            <input type="text" class="form-control" id="fullName" name="fullName"
+                   value="<c:out value='${staff.fullName}'/>" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="dateOfBirth">Date of Birth</label>
+            <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth"
+                   value="<c:out value='${staff.dateOfBirth}'/>" required>
         </div>
         <div class="form-group">
             <label>Gender</label><br>
@@ -46,7 +59,28 @@
         </div>
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="${staff.email}" required maxlength="100">
+            <input type="email" class="form-control" id="email" name="email"
+                   value="<c:out value='${staff.email}'/>" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="department">Department</label>
+            <input type="text" class="form-control" id="department" name="department"
+                   value="<c:out value='${staff.department}'/>" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="position">Position</label>
+            <input type="text" class="form-control" id="position" name="position"
+                   value="<c:out value='${staff.position}'/>" required maxlength="100">
+        </div>
+        <div class="form-group">
+            <label for="salary">Salary (VND)</label>
+            <input type="number" class="form-control" id="salary" name="salary"
+                   value="<c:out value='${staff.salary}'/>" required min="1000000" max="1000000000" step="1000">
+        </div>
+        <div class="form-group">
+            <label for="hireDate">Hire Date</label>
+            <input type="date" class="form-control" id="hireDate" name="hireDate"
+                   value="<c:out value='${staff.hireDate}'/>" required>
         </div>
         <c:if test="${empty staff || staff.staffID == 0}">
             <div class="form-group">

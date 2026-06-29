@@ -6,10 +6,13 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 /**
  * This listener class is automatically instantiated and invoked by the web
@@ -119,11 +122,17 @@ public class DataInitializer implements ServletContextListener {
             System.out.println("Table 'Staff' not found. Creating table...");
             String createSQL = "CREATE TABLE Staff ("
                     + "StaffID INT PRIMARY KEY IDENTITY(1,1), "
+                    + "StaffCode VARCHAR(20) NOT NULL UNIQUE, "
                     + "FullName NVARCHAR(100) NOT NULL, "
+                    + "DateOfBirth DATE NULL, "
                     + "Gender BIT NOT NULL, "
                     + "PhoneNumber VARCHAR(20), "
                     + "Email VARCHAR(100) NOT NULL UNIQUE, "
                     + "Password VARCHAR(255) NOT NULL, "
+                    + "Department NVARCHAR(100) NULL, "
+                    + "Position NVARCHAR(100) NULL, "
+                    + "Salary DECIMAL(18,2) NULL, "
+                    + "HireDate DATE NULL, "
                     + "Role_ID INT NOT NULL, "
                     + "IsActive BIT NOT NULL, "
                     + "CONSTRAINT FK_Staff_Role FOREIGN KEY (Role_ID) REFERENCES Role(Role_ID)"
@@ -132,6 +141,42 @@ public class DataInitializer implements ServletContextListener {
                 ps.execute();
                 System.out.println("Table 'Staff' created.");
             }
+        }
+
+        // For databases created before FR-07, add the new columns if they are missing
+        // so the application keeps running without a manual migration.
+        addColumnIfNotExists(conn, "StaffCode", "VARCHAR(20)");
+        addColumnIfNotExists(conn, "DateOfBirth", "DATE");
+        addColumnIfNotExists(conn, "Department", "NVARCHAR(100)");
+        addColumnIfNotExists(conn, "Position", "NVARCHAR(100)");
+        addColumnIfNotExists(conn, "Salary", "DECIMAL(18,2)");
+        addColumnIfNotExists(conn, "HireDate", "DATE");
+    }
+
+    /**
+     * Adds a column to the 'Staff' table when it does not already exist. New
+     * columns are added as NULL so existing rows remain valid.
+     *
+     * @param conn       The active database connection.
+     * @param columnName The column to add.
+     * @param columnType The SQL type definition for the column.
+     * @throws SQLException if a database access error occurs.
+     */
+    private void addColumnIfNotExists(Connection conn, String columnName, String columnType) throws SQLException {
+        String checkSQL = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                + "WHERE TABLE_NAME = 'Staff' AND COLUMN_NAME = ?";
+        try (PreparedStatement ps = conn.prepareStatement(checkSQL)) {
+            ps.setString(1, columnName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return;
+                }
+            }
+        }
+        String alterSQL = "ALTER TABLE Staff ADD " + columnName + " " + columnType + " NULL";
+        try (PreparedStatement ps = conn.prepareStatement(alterSQL)) {
+            ps.execute();
+            System.out.println("Added column '" + columnName + "' to 'Staff'.");
         }
     }
 
@@ -157,21 +202,46 @@ public class DataInitializer implements ServletContextListener {
             System.out.println("Default roles inserted.");
         }
 
-        // Insert a default administrator user for initial login.
-        // IMPORTANT: The password here is plain text. In a real-world application, this should be hashed.
-        try (PreparedStatement ps = conn.prepareStatement("INSERT INTO Staff (FullName, Gender, PhoneNumber, Email, Password, Role_ID, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            ps.setString(1, "Admin User");
-            ps.setBoolean(2, true); // true for Male
-            ps.setString(3, "0123456789");
-            ps.setString(4, "admin@example.com");
+        String seedSql = "INSERT INTO Staff (StaffCode, FullName, DateOfBirth, Gender, PhoneNumber, Email, "
+                + "Password, Department, Position, Salary, HireDate, Role_ID, IsActive) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            String hashedPassword = PasswordUtils.hashPassword("admin123");
-
-            ps.setString(5, hashedPassword); // WARNING: Plain text password
-            ps.setInt(6, 1); // Role_ID for Admin
-            ps.setBoolean(7, true); // IsActive
+        // Insert a default administrator user for initial login (password hashed with jBCrypt).
+        try (PreparedStatement ps = conn.prepareStatement(seedSql)) {
+            ps.setString(1, "ADMIN001");
+            ps.setString(2, "Admin User");
+            ps.setDate(3, Date.valueOf(LocalDate.of(1990, 1, 1)));
+            ps.setBoolean(4, true); // true for Male
+            ps.setString(5, "0123456789");
+            ps.setString(6, "admin@example.com");
+            ps.setString(7, PasswordUtils.hashPassword("admin123"));
+            ps.setString(8, "Management");
+            ps.setString(9, "Administrator");
+            ps.setBigDecimal(10, new BigDecimal("20000000"));
+            ps.setDate(11, Date.valueOf(LocalDate.of(2020, 1, 1)));
+            ps.setInt(12, 1); // Role_ID for Admin
+            ps.setBoolean(13, true); // IsActive
             ps.executeUpdate();
             System.out.println("Default admin user inserted.");
+        }
+
+        // A regular Staff account (Role_ID = 2) for testing the read-only role.
+        try (PreparedStatement ps = conn.prepareStatement(seedSql)) {
+            ps.setString(1, "STAFF001");
+            ps.setString(2, "Nguyen Van A");
+            ps.setDate(3, Date.valueOf(LocalDate.of(1998, 6, 15)));
+            ps.setBoolean(4, true);
+            ps.setString(5, "0987654321");
+            ps.setString(6, "user@example.com");
+            ps.setString(7, PasswordUtils.hashPassword("user123"));
+            ps.setString(8, "Human Resources");
+            ps.setString(9, "HR Staff");
+            ps.setBigDecimal(10, new BigDecimal("12000000"));
+            ps.setDate(11, Date.valueOf(LocalDate.of(2022, 3, 1)));
+            ps.setInt(12, 2); // Role_ID = 2 (Staff)
+            ps.setBoolean(13, true);
+            ps.executeUpdate();
+            System.out.println("Default staff user inserted.");
         }
     }
 
