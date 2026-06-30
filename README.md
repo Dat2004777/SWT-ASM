@@ -27,7 +27,7 @@ Trước khi bắt đầu, hãy đảm bảo máy tính của bạn đã cài đ
 1. **Java JDK 17** trở lên.
 2. **Apache Maven 3.6** trở lên.
 3. **Microsoft SQL Server** (đã bật cổng `1433` và cho phép kết nối bằng tài khoản SQL Server Authentication).
-4. **Apache Tomcat 10.x** (⚠️ **BẮT BUỘC**: Phải dùng Tomcat 10, không dùng Tomcat 9 hoặc cũ hơn vì dự án sử dụng Jakarta EE với namespace `jakarta.*`).
+4. **Apache Tomcat 10.x** (**BẮT BUỘC**: Phải dùng Tomcat 10, không dùng Tomcat 9 hoặc cũ hơn vì dự án sử dụng Jakarta EE với namespace `jakarta.*`).
 5. **Google Chrome** (để chạy Selenium UI Test).
 
 ---
