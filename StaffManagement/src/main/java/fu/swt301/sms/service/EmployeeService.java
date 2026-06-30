@@ -111,6 +111,9 @@ public class EmployeeService {
         return errors;
     }
     public void deleteStaff(int staffId) {
+        if (staffId <= 0) {
+            return;
+        }
         // Vì yêu cầu của bạn là xóa cứng, ta chỉ cần gọi trực tiếp lệnh deleteStaff từ DAO
         staffDAO.deleteStaff(staffId);
     }
