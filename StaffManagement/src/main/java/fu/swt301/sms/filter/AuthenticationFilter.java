@@ -12,14 +12,20 @@ import java.io.IOException;
 public class AuthenticationFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        httpResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); 
+        httpResponse.setHeader("Pragma", "no-cache"); 
+        httpResponse.setDateHeader("Expires", 0);
+
         HttpSession session = httpRequest.getSession(false);
 
         String requestURI = httpRequest.getRequestURI();
@@ -41,9 +47,8 @@ public class AuthenticationFilter implements Filter {
 
         if (urlPath.equals("/staff-crud")) {
             if (loggedInUser.getRole() == null || loggedInUser.getRole().getRoleID() != 1) {
-                
-                httpRequest.setAttribute("error", "Tài khoản của bạn không có quyền truy cập khu vực CRUD này!");
-                httpRequest.getRequestDispatcher("/staff-list").forward(request, response);
+
+                httpResponse.sendRedirect(contextPath + "/staff-list");
                 return;
             }
         }
@@ -52,5 +57,6 @@ public class AuthenticationFilter implements Filter {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 }
