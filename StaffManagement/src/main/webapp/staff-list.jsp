@@ -70,7 +70,9 @@
                                             <c:out value="${staff.role.roleName}" />
                                         </td>
                                         <td>${staff.isActive?'Active':'Inactive'}</td>
-                                        <td><a href="staff-crud?action=edit&id=${staff.staffID}"
+                                        <td><a href="staff-crud?action=view&id=${staff.staffID}"
+                                                class="btn btn-sm btn-info">View</a> <a
+                                                href="staff-crud?action=edit&id=${staff.staffID}"
                                                 class="btn btn-sm btn-warning">Edit</a> <a
                                                 href="staff-crud?action=delete&id=${staff.staffID}"
                                                 class="btn btn-sm btn-danger"

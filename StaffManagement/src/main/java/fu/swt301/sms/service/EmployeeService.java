@@ -62,4 +62,23 @@ public class EmployeeService {
         staffDAO.createStaff(staff);
         return errors;
     }
+
+    /**
+     * Retrieves a single staff member's full details (FR-10).
+     * <p>
+     * A non-positive id can never match a real record (StaffID is an IDENTITY
+     * starting at 1), so it short-circuits to {@code null} without touching the
+     * database. This guard keeps the method unit-testable without a DB and makes
+     * the "not found" path explicit for the servlet.
+     *
+     * @param staffId the id of the staff member to view
+     * @return the populated {@link Staff}, or {@code null} when the id is invalid
+     *         or no matching record exists
+     */
+    public Staff getStaffById(int staffId) {
+        if (staffId <= 0) {
+            return null;
+        }
+        return staffDAO.getStaffById(staffId);
+    }
 }
