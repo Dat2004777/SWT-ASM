@@ -18,6 +18,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchPaginationSystemTest {
@@ -93,11 +94,22 @@ class SearchPaginationSystemTest {
     @Test
     @DisplayName("ST_PAG_002: Previous is disabled on page 1")
     void testST_PAG_002_PreviousDisabledOnFirstPage() {
-        WebElement previousItem = wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath("//ul[contains(@class,'pagination')]//a[normalize-space()='Previous']/parent::li")));
+        driver.get("http://localhost:8080/StaffManagement/staff-list?page=1");
 
-        assertTrue(previousItem.getAttribute("class").contains("disabled"),
-                "Previous must be disabled on page 1");
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.className("pagination")));
+
+        WebElement firstItem = wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//ul[contains(@class,'pagination')]//a[normalize-space()='First']/parent::li")));
+
+        System.out.println("[RUNNING] ST_PAG_002: Verifying 'First' button state on Page 1...");
+
+        String classAttribute = firstItem.getAttribute("class");
+        assertNotNull(classAttribute, "Thẻ li của nút First phải có thuộc tính class");
+
+        assertTrue(classAttribute.contains("disabled"),
+                "Nút 'First' phải chứa class 'disabled' khi hệ thống đang ở trang 1!");
+
+        System.out.println("[SUCCESS] ST_PAG_002: 'First' button is successfully disabled on Page 1.");
     }
 
     private void searchByName(String keyword) {

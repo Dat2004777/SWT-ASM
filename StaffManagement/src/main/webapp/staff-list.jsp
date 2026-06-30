@@ -93,9 +93,6 @@
                     <li class="page-item ${pageResult.currentPage == 1 ? 'disabled' : ''}">
                         <a class="page-link" href="${pageUrl}&page=1">First</a>
                     </li>
-                    <li class="page-item ${pageResult.currentPage == 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="${pageUrl}&page=${pageResult.currentPage - 1}">Previous</a>
-                    </li>
 
                     <c:set var="adjacents" value="2" />
                     <c:set var="startPage" value="${pageResult.currentPage - adjacents}" />

@@ -37,7 +37,7 @@ public class AuthenticationFilterTest {
         chain = mock(FilterChain.class);
         session = mock(HttpSession.class);
         dispatcher = mock(RequestDispatcher.class);
-        
+
         when(request.getContextPath()).thenReturn("/StaffManagement");
     }
 
@@ -65,10 +65,10 @@ public class AuthenticationFilterTest {
     public void testDoFilter_ShouldAllowAdmin_ToAccessCrud() throws Exception {
         when(request.getRequestURI()).thenReturn("/StaffManagement/staff-crud");
         when(request.getSession(false)).thenReturn(session);
-        
+
         Staff admin = new Staff();
         Role role = new Role();
-        role.setRoleID(1); 
+        role.setRoleID(1);
         admin.setRole(role);
         when(session.getAttribute("user")).thenReturn(admin);
 
@@ -80,8 +80,8 @@ public class AuthenticationFilterTest {
     @Test
     public void testDoFilter_ShouldBlockStaff_FromAccessingCrud() throws Exception {
         when(request.getRequestURI()).thenReturn("/StaffManagement/staff-crud");
+        when(request.getContextPath()).thenReturn("/StaffManagement");
         when(request.getSession(false)).thenReturn(session);
-        when(request.getRequestDispatcher("/staff-list")).thenReturn(dispatcher);
         
         Staff staff = new Staff();
         Role role = new Role();
@@ -91,8 +91,7 @@ public class AuthenticationFilterTest {
 
         filter.doFilter(request, response, chain);
 
-        verify(request, times(1)).setAttribute(eq("error"), anyString());
-        verify(dispatcher, times(1)).forward(request, response);
+        verify(response, times(1)).sendRedirect("/StaffManagement/staff-list");
         verify(chain, never()).doFilter(request, response);
     }
 }
