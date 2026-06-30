@@ -56,7 +56,7 @@ public class AuthenticationSystemTest {
     @DisplayName("ST_LGN_002: Đăng nhập Staff thành công")
     public void testST_LGN_002_LoginSuccessAsStaff() {
         driver.get(BASE_URL + "/login");
-        loginPage.login("user@example.com", "user123");
+        loginPage.login("user1@example.com", "user123");
 
         assertTrue(driver.getCurrentUrl().contains("/staff-list"));
     }
@@ -85,6 +85,21 @@ public class AuthenticationSystemTest {
 
     @Test
     @Order(5)
+    @DisplayName("ST_LGN_005: Khóa tài khoản (Lockout) sau 5 lần nhập sai")
+    public void testST_LGN_005_AccountLockout() {
+        driver.get(BASE_URL + "/login");
+
+        for (int i = 0; i < 5; i++) {
+            loginPage.login("user2@example.com", "hackpass");
+        }
+
+        loginPage.login("user2@example.com", "hackpass");
+        String errorMsg = loginPage.getErrorMessage().toLowerCase();
+        assertTrue(errorMsg.contains("locked") || errorMsg.contains("try again after"));
+    }
+
+    @Test
+    @Order(6)
     @DisplayName("ST_ACC_001: Khách vãng lai bị chặn khi vào thẳng trang bảo mật")
     public void testST_ACC_001_GuestUserIntercepted() {
         driver.get(BASE_URL + "/staff-list");
@@ -93,11 +108,11 @@ public class AuthenticationSystemTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("ST_ACC_002: Tài khoản Staff bị chặn vào link CRUD của Admin")
     public void testST_ACC_002_StaffRestrictedFromAdminPages() {
         driver.get(BASE_URL + "/login");
-        loginPage.login("user@example.com", "user123");
+        loginPage.login("user1@example.com", "user123");
 
         driver.get(BASE_URL + "/staff-crud");
 
@@ -106,7 +121,7 @@ public class AuthenticationSystemTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("ST_ACC_003: Đăng xuất xóa sạch Session (Nhấn Back không quay lại được)")
     public void testST_ACC_003_SessionClearanceOnLogout() {
         driver.get(BASE_URL + "/login");
@@ -117,20 +132,5 @@ public class AuthenticationSystemTest {
         driver.navigate().back();
 
         assertTrue(driver.getCurrentUrl().contains("/login"));
-    }
-
-    @Test
-    @Order(8)
-    @DisplayName("ST_LGN_005: Khóa tài khoản (Lockout) sau 5 lần nhập sai")
-    public void testST_LGN_005_AccountLockout() {
-        driver.get(BASE_URL + "/login");
-
-        for (int i = 0; i < 5; i++) {
-            loginPage.login("admin@example.com", "hackpass");
-        }
-
-        loginPage.login("admin@example.com", "hackpass");
-        String errorMsg = loginPage.getErrorMessage().toLowerCase();
-        assertTrue(errorMsg.contains("locked") || errorMsg.contains("try again after"));
     }
 }
