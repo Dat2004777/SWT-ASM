@@ -21,11 +21,16 @@
                             <option value="true" ${param.searchStatus=='true' ?'selected':''}>Active</option>
                             <option value="false" ${param.searchStatus=='false' ?'selected':''}>Inactive</option>
                         </select></div>
+                    <div class="col"><label>Department</label><input class="form-control" name="searchDepartment"
+                            value="<c:out value='${param.searchDepartment}'/>" placeholder="Search by department"></div>
                     <div class="col-auto"><button class="btn btn-primary">Search</button> <a
                             class="btn btn-outline-secondary" href="staff-list">Reset</a></div>
                 </form>
-                <div class="mb-3"><a href="staff-crud?action=create" class="btn btn-success">Add Staff</a><span
-                        class="float-right">${pageResult.totalItems} result(s)</span></div>
+                <div class="mb-3">
+                    <a href="${pageContext.request.contextPath}/staff-crud?action=create" class="btn btn-success">Add Staff</a>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger">Logout</a>
+                    <span class="float-right">${pageResult.totalItems} result(s)</span>
+                </div>
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
@@ -36,6 +41,7 @@
                             <th>Email</th>
                             <th>Role</th>
                             <th>Status</th>
+                            <th>Department</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -43,7 +49,7 @@
                         <c:choose>
                             <c:when test="${empty staffList}">
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted">No staff found.</td>
+                                    <td colspan="9" class="text-center text-muted">No staff found.</td>
                                 </tr>
                             </c:when>
                             <c:otherwise>
@@ -64,7 +70,10 @@
                                             <c:out value="${staff.role.roleName}" />
                                         </td>
                                         <td>${staff.isActive?'Active':'Inactive'}</td>
-                                        <td><a href="staff-crud?action=edit&id=${staff.staffID}"
+                                        <td><c:out value="${staff.department}" /></td>
+                                        <td><a href="staff-crud?action=view&id=${staff.staffID}"
+                                                class="btn btn-sm btn-info">View</a> <a
+                                                href="staff-crud?action=edit&id=${staff.staffID}"
                                                 class="btn btn-sm btn-warning">Edit</a> <a
                                                 href="staff-crud?action=delete&id=${staff.staffID}"
                                                 class="btn btn-sm btn-danger"
@@ -79,6 +88,7 @@
                     <c:param name="searchName" value="${param.searchName}" />
                     <c:param name="staffId" value="${param.staffId}" />
                     <c:param name="searchStatus" value="${param.searchStatus}" />
+                    <c:param name="searchDepartment" value="${param.searchDepartment}" />
                 </c:url>
                 <nav>
                     <ul class="pagination justify-content-center">

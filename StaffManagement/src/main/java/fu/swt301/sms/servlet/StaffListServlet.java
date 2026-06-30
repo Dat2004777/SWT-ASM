@@ -19,7 +19,8 @@ public class StaffListServlet extends HttpServlet {
         int page = parsePage(request.getParameter("page"));
         PageResult<Staff> result = new StaffDAO().search(
                 request.getParameter("searchName"), staffId,
-                request.getParameter("searchStatus"), page, 10);
+                request.getParameter("searchStatus"),
+                request.getParameter("searchDepartment"), page, 10);
         request.setAttribute("staffList", result.getItems());
         request.setAttribute("pageResult", result);
         request.getRequestDispatcher("staff-list.jsp").forward(request, response);

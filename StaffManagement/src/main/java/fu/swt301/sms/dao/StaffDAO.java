@@ -164,7 +164,8 @@ public class StaffDAO {
     }
 
 
-    public PageResult<Staff> search(String name, Integer staffId, String status, int requestedPage, int pageSize) {
+    public PageResult<Staff> search(String name, Integer staffId, String status,
+                                    String department, int requestedPage, int pageSize) {
         StringBuilder where = new StringBuilder(" WHERE 1=1");
         List<Object> parameters = new ArrayList<>();
         if (name != null && !name.isBlank()) {
@@ -178,6 +179,10 @@ public class StaffDAO {
         if (status != null && !status.isBlank()) {
             where.append(" AND s.IsActive = ?");
             parameters.add(Boolean.parseBoolean(status));
+        }
+        if (department != null && !department.isBlank()) {
+            where.append(" AND LOWER(s.Department) LIKE LOWER(?)");
+            parameters.add("%" + department.trim() + "%");
         }
         try (Connection connection = DBUtils.getConnection()) {
             int totalItems;
@@ -205,6 +210,14 @@ public class StaffDAO {
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException("Cannot search staff", e);
         }
+    }
+
+    /**
+     * Backward-compatible overload for callers that do not filter by department.
+     */
+    public PageResult<Staff> search(String name, Integer staffId, String status,
+                                    int requestedPage, int pageSize) {
+        return search(name, staffId, status, null, requestedPage, pageSize);
     }
 
     private void bind(PreparedStatement statement, List<Object> parameters) throws SQLException {
