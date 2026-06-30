@@ -382,4 +382,42 @@ public class StaffDAO {
         }
         return null;
     }
+    
+    public Staff getStaffByEmail(String email) {
+        String sql = "SELECT * FROM Staff WHERE Email = ?";
+
+        try (Connection conn = DBUtils.getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Staff staff = new Staff();
+                    staff.setStaffID(rs.getInt("StaffID"));
+                    staff.setStaffCode(rs.getString("StaffCode"));
+                    staff.setFullName(rs.getString("FullName"));
+                    staff.setEmail(rs.getString("Email"));
+                    staff.setPassword(rs.getString("Password"));
+                    staff.setIsActive(rs.getBoolean("IsActive"));
+                    return staff;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); 
+        }
+        return null; 
+    }
+
+    public void updateActiveStatus(String email, boolean isActive) {
+        String sql = "UPDATE Staff SET IsActive = ? WHERE Email = ?";
+        try (Connection conn = DBUtils.getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, isActive);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

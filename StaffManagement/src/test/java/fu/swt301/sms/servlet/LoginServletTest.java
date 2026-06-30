@@ -1,30 +1,26 @@
 package fu.swt301.sms.servlet;
 
-import fu.swt301.sms.dao.StaffDAO;
 import fu.swt301.sms.entity.Staff;
+import fu.swt301.sms.service.AuthService;
+import fu.swt301.sms.service.LoginResult;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests the thin HTTP wiring of {@link LoginServlet} after the auth/lockout
- * logic was extracted to {@code AuthService}. The servlet is created INSIDE the
- * {@code mockConstruction} block so the {@code StaffDAO} built by
- * {@code new AuthService()} is the mocked one. Auth/lockout rules themselves are
- * covered by {@code AuthServiceTest}.
+ * Tests the HTTP wiring of {@link LoginServlet}.
+ * The servlet delegates authentication and lockout logic to {@code AuthService}.
+ * We mock {@code AuthService} to isolate the servlet's request/response handling.
  */
 class LoginServletTest {
 
@@ -51,9 +47,10 @@ class LoginServletTest {
 
         Staff mockStaff = new Staff();
         mockStaff.setEmail("admin@gmail.com");
+        LoginResult successResult = LoginResult.success(mockStaff);
 
-        try (MockedConstruction<StaffDAO> mocked = mockConstruction(StaffDAO.class,
-                (m, ctx) -> when(m.checkLogin("admin@gmail.com", "123456")).thenReturn(mockStaff))) {
+        try (MockedConstruction<AuthService> mocked = mockConstruction(AuthService.class,
+                (m, ctx) -> when(m.login("admin@gmail.com", "123456")).thenReturn(successResult))) {
 
             LoginServlet servlet = new LoginServlet();
             servlet.doPost(request, response);
@@ -64,53 +61,32 @@ class LoginServletTest {
     }
 
     @Test
-    void testDoPost_EmptyEmailOrPassword_forwardsWithError() throws Exception {
-        when(request.getParameter("email")).thenReturn("");
-        when(request.getParameter("password")).thenReturn("");
-
-        // No DAO call on this path, so a real StaffDAO is harmless.
-        new LoginServlet().doPost(request, response);
-
-        verify(request).setAttribute("error", "Invalid email or password.");
-        verify(requestDispatcher).forward(request, response);
-    }
-
-    @Test
-    void testDoPost_FailedLogin_showsAttemptCount() throws Exception {
+    void testDoPost_Failure_setsErrorAndForwards() throws Exception {
         when(request.getParameter("email")).thenReturn("admin@gmail.com");
         when(request.getParameter("password")).thenReturn("wrongpass");
 
-        try (MockedConstruction<StaffDAO> mocked = mockConstruction(StaffDAO.class,
-                (m, ctx) -> when(m.checkLogin(anyString(), anyString())).thenReturn(null))) {
+        LoginResult failureResult = LoginResult.failure("Invalid email or password.");
+
+        try (MockedConstruction<AuthService> mocked = mockConstruction(AuthService.class,
+                (m, ctx) -> when(m.login("admin@gmail.com", "wrongpass")).thenReturn(failureResult))) {
 
             LoginServlet servlet = new LoginServlet();
             servlet.doPost(request, response);
 
-            ArgumentCaptor<String> error = ArgumentCaptor.forClass(String.class);
-            verify(request).setAttribute(eq("error"), error.capture());
-            assertTrue(error.getValue().contains("Attempt 1/5"));
+            verify(request).setAttribute("error", "Invalid email or password.");
             verify(requestDispatcher).forward(request, response);
         }
     }
 
     @Test
-    void testDoPost_AccountLockedAfterMaxAttempts() throws Exception {
-        when(request.getParameter("email")).thenReturn("admin@gmail.com");
-        when(request.getParameter("password")).thenReturn("wrongpass");
-
-        try (MockedConstruction<StaffDAO> mocked = mockConstruction(StaffDAO.class,
-                (m, ctx) -> when(m.checkLogin(anyString(), anyString())).thenReturn(null))) {
-
+    void testDoGet_forwardsToLoginJsp() throws Exception {
+        // GET request shouldn't trigger any login logic, so AuthService mock is just to prevent real initialization side-effects
+        try (MockedConstruction<AuthService> mocked = mockConstruction(AuthService.class)) {
             LoginServlet servlet = new LoginServlet();
-            for (int i = 1; i <= 6; i++) {
-                servlet.doPost(request, response);
-            }
+            servlet.doGet(request, response);
 
-            ArgumentCaptor<String> error = ArgumentCaptor.forClass(String.class);
-            verify(request, org.mockito.Mockito.atLeast(1)).setAttribute(eq("error"), error.capture());
-            String last = error.getAllValues().get(error.getAllValues().size() - 1);
-            assertTrue(last.contains("locked") || last.contains("try again after"),
-                    "Expected lock message, got: " + last);
+            verify(request).getRequestDispatcher("login.jsp");
+            verify(requestDispatcher).forward(request, response);
         }
     }
 }

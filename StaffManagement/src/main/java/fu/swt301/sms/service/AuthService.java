@@ -94,6 +94,7 @@ public class AuthService {
         if (count >= MAX_ATTEMPTS) {
             lockedUntil.put(email, now() + LOCK_TIME_MS);
             failedAttempts.remove(email);
+            staffDAO.updateActiveStatus(email, false);
         } else {
             failedAttempts.put(email, count);
         }
