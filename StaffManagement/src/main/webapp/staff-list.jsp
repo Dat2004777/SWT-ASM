@@ -100,10 +100,6 @@
                                                                                  href="${pageUrl}&page=${pageResult.currentPage+1}">Next</a></li>
                 </ul>
             </nav>
-
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger">${error}</div>
-            </c:if>
         </div>
     </body>
 
