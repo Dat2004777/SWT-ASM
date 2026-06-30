@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchPaginationSystemTest {
 
-    private static final String BASE_URL = "http://localhost:9999/StaffManagement";
+    private static final String BASE_URL = "http://localhost:8080/StaffManagement";
 
     private WebDriver driver;
     private WebDriverWait wait;

@@ -33,34 +33,42 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Khối 2 — System (Selenium) tests for the Staff Management CRUD module (FR-06..FR-10).
- * Eight end-to-end scenarios (ST_CRD_001..008) that drive a real browser against the
+ * Khối 2 — System (Selenium) tests for the Staff Management CRUD module
+ * (FR-06..FR-10).
+ * Eight end-to-end scenarios (ST_CRD_001..008) that drive a real browser
+ * against the
  * deployed application, simulating an Admin clicking buttons on the forms.
  *
- * <p><b>Pre-requisites:</b> the WAR must be running on Tomcat with SQL Server seeded by
- * {@code DataInitializer} (admin@example.com / admin123 and 1000 STAFF users). The base URL
- * defaults to {@code http://localhost:8080/StaffManagement} and can be overridden with
+ * <p>
+ * <b>Pre-requisites:</b> the WAR must be running on Tomcat with SQL Server
+ * seeded by
+ * {@code DataInitializer} (admin@example.com / admin123 and 1000 STAFF users).
+ * The base URL
+ * defaults to {@code http://localhost:8080/StaffManagement} and can be
+ * overridden with
  * {@code -Dapp.base.url=...}. The browser is shown by default; pass
  * {@code -Dselenium.headless=true} to run it hidden (e.g. on CI).
- * If the server is unreachable the whole class is skipped (not failed) so {@code mvn test}
+ * If the server is unreachable the whole class is skipped (not failed) so
+ * {@code mvn test}
  * stays green when no server is up.
  */
 @DisplayName("ST_CRD — Staff Management CRUD (Selenium System Tests)")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StaffCrudSystemTest {
 
-    private static final String BASE_URL =
-            System.getProperty("app.base.url", "http://localhost:8080/StaffManagement");
+    private static final String BASE_URL = System.getProperty("app.base.url", "http://localhost:8080/StaffManagement");
     private static final String ADMIN_EMAIL = "admin@example.com";
     private static final String ADMIN_PASSWORD = "admin123";
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
 
     /**
-     * Delay (ms) inserted after each UI action so a human can follow along during a demo.
-     * Override with {@code -Dselenium.slowmo=1500} (slower) or {@code -Dselenium.slowmo=0}
+     * Delay (ms) inserted after each UI action so a human can follow along during a
+     * demo.
+     * Override with {@code -Dselenium.slowmo=1500} (slower) or
+     * {@code -Dselenium.slowmo=0}
      * (full speed, e.g. on CI).
      */
-    private static final long SLOWMO_MS = Long.getLong("selenium.slowmo", 700L);
+    private static final long SLOWMO_MS = Long.getLong("selenium.slowmo", 0L);
 
     /** Distinguishes records created within the same millisecond across tests. */
     private static final AtomicInteger SEQ = new AtomicInteger(0);
@@ -103,7 +111,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_001 — Admin adds a valid staff -> row appears in the table  //
+    // ST_CRD_001 — Admin adds a valid staff -> row appears in the table //
     // ------------------------------------------------------------------ //
     @Test
     @Order(1)
@@ -121,7 +129,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_002 — Duplicate email -> server-side validation error       //
+    // ST_CRD_002 — Duplicate email -> server-side validation error //
     // ------------------------------------------------------------------ //
     @Test
     @Order(2)
@@ -141,7 +149,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_003 — Empty required fields -> blocked client-side          //
+    // ST_CRD_003 — Empty required fields -> blocked client-side //
     // ------------------------------------------------------------------ //
     @Test
     @Order(3)
@@ -158,7 +166,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_004 — View Details shows the correct staff info (FR-10)     //
+    // ST_CRD_004 — View Details shows the correct staff info (FR-10) //
     // ------------------------------------------------------------------ //
     @Test
     @Order(4)
@@ -184,7 +192,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_005 — Edit phone number -> table reflects the change        //
+    // ST_CRD_005 — Edit phone number -> table reflects the change //
     // ------------------------------------------------------------------ //
     @Test
     @Order(5)
@@ -211,7 +219,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_006 — Negative salary on edit -> update rejected            //
+    // ST_CRD_006 — Negative salary on edit -> update rejected //
     // ------------------------------------------------------------------ //
     @Test
     @Order(6)
@@ -236,7 +244,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_007 — Delete a staff -> that account can no longer log in   //
+    // ST_CRD_007 — Delete a staff -> that account can no longer log in //
     // ------------------------------------------------------------------ //
     @Test
     @Order(7)
@@ -249,8 +257,7 @@ class StaffCrudSystemTest {
         createStaff(code(suffix), name, phone(suffix), loginEmail, "Engineering", "15000000", password);
 
         // Delete via the row's Delete button (confirm() dialog handled below).
-        WebElement deleteLink =
-                findRowByName(name).findElement(By.xpath(".//a[contains(@href,'action=delete')]"));
+        WebElement deleteLink = findRowByName(name).findElement(By.xpath(".//a[contains(@href,'action=delete')]"));
         click(deleteLink);
         try {
             wait.until(ExpectedConditions.alertIsPresent());
@@ -272,7 +279,7 @@ class StaffCrudSystemTest {
     }
 
     // ------------------------------------------------------------------ //
-    //  ST_CRD_008 — Invalid date-of-birth format -> data error            //
+    // ST_CRD_008 — Invalid date-of-birth format -> data error //
     // ------------------------------------------------------------------ //
     @Test
     @Order(8)
@@ -284,7 +291,8 @@ class StaffCrudSystemTest {
         fillStaffForm(code(suffix), "Selenium BadDate " + suffix,
                 phone(suffix), email(suffix), "Engineering", "15000000", "Test@123");
 
-        // An impossible date: the <input type="date"> rejects it (value becomes empty/invalid).
+        // An impossible date: the <input type="date"> rejects it (value becomes
+        // empty/invalid).
         WebElement dob = driver.findElement(By.id("dateOfBirth"));
         jsSetValue(dob, "2000-02-31");
         submitForm();
@@ -296,7 +304,7 @@ class StaffCrudSystemTest {
     }
 
     // =================================================================== //
-    //  Helpers                                                            //
+    // Helpers //
     // =================================================================== //
 
     private void login(String email, String password) {
@@ -316,12 +324,12 @@ class StaffCrudSystemTest {
 
     /** Creates a staff with the default password through the Add Staff form. */
     private void createStaff(String code, String name, String phone, String email,
-                             String department, String salary) {
+            String department, String salary) {
         createStaff(code, name, phone, email, department, salary, "Test@123");
     }
 
     private void createStaff(String code, String name, String phone, String email,
-                             String department, String salary, String password) {
+            String department, String salary, String password) {
         openCreateForm();
         fillStaffForm(code, name, phone, email, department, salary, password);
         submitForm();
@@ -330,7 +338,7 @@ class StaffCrudSystemTest {
 
     /** Fills the staff form. The password field only exists on the create form. */
     private void fillStaffForm(String code, String name, String phone, String email,
-                               String department, String salary, String password) {
+            String department, String salary, String password) {
         type(By.id("staffCode"), code);
         type(By.id("fullName"), name);
         jsSetValue(driver.findElement(By.id("dateOfBirth")), "2000-01-01");
@@ -357,7 +365,9 @@ class StaffCrudSystemTest {
         click(driver.findElement(By.cssSelector("button[type='submit']")));
     }
 
-    /** Navigates to the list filtered by name and returns the single matching row. */
+    /**
+     * Navigates to the list filtered by name and returns the single matching row.
+     */
     private WebElement findRowByName(String name) {
         driver.get(BASE_URL + "/staff-list?searchName="
                 + URLEncoder.encode(name, StandardCharsets.UTF_8));
