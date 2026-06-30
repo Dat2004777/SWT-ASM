@@ -458,4 +458,31 @@ class StaffCrudSystemTest {
             return false;
         }
     }
+    @Test
+    @Order(9)
+    @DisplayName("ST_CRD_009: Edit staff -> Click Hard Delete -> Record disappears from list")
+    void st_crd_009_editThenHardDelete_removesFromTable() {
+        String suffix = uniqueSuffix();
+        String name = "Selenium Delete Flow " + suffix;
+        createStaff(code(suffix), name, phone(suffix), email(suffix), "Engineering", "15000000");
+        WebElement row = findRowByName(name);
+        click(row.findElement(By.xpath(".//a[contains(@href,'action=edit')]")));
+        wait.until(ExpectedConditions.urlContains("action=edit"));
+        pause();
+        WebElement deleteButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("btnDelete"))); 
+        click(deleteButton);
+        try {
+            wait.until(ExpectedConditions.alertIsPresent());
+            driver.switchTo().alert().accept();
+        } catch (TimeoutException ignored) {
+        }
+        wait.until(ExpectedConditions.urlContains("staff-list"));
+        pause();
+        driver.get(BASE_URL + "/staff-list?searchName=" 
+                + URLEncoder.encode(name, StandardCharsets.UTF_8));
+        String rowXpath = "//tbody/tr[td[2][normalize-space()='" + name + "']]";
+        java.util.List<WebElement> remainingRows = driver.findElements(By.xpath(rowXpath));
+        assertTrue(remainingRows.isEmpty(), 
+                "Lỗi: Nhân viên '" + name + "' đáng lẽ phải biến mất khỏi danh sách sau khi bị Xóa cứng.");
+    }
 }
