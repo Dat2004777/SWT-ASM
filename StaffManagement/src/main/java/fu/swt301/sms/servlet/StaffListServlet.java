@@ -1,8 +1,8 @@
 package fu.swt301.sms.servlet;
 
-import fu.swt301.sms.dao.StaffDAO;
 import fu.swt301.sms.entity.PageResult;
 import fu.swt301.sms.entity.Staff;
+import fu.swt301.sms.service.StaffSearchService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,14 +12,16 @@ import java.io.IOException;
 
 @WebServlet("/staff-list")
 public class StaffListServlet extends HttpServlet {
+    private final StaffSearchService searchService = new StaffSearchService();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Integer staffId = parseNullable(request.getParameter("staffId"));
         int page = parsePage(request.getParameter("page"));
-        PageResult<Staff> result = new StaffDAO().search(
+        PageResult<Staff> result = searchService.search(
                 request.getParameter("searchName"), staffId,
-                request.getParameter("searchStatus"), page, 10);
+                request.getParameter("searchStatus"), page);
         request.setAttribute("staffList", result.getItems());
         request.setAttribute("pageResult", result);
         request.getRequestDispatcher("staff-list.jsp").forward(request, response);
