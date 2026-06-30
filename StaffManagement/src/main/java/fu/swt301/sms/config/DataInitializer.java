@@ -157,7 +157,7 @@ public class DataInitializer implements ServletContextListener {
      * Adds a column to the 'Staff' table when it does not already exist. New
      * columns are added as NULL so existing rows remain valid.
      *
-     * @param conn       The active database connection.
+     * @param conn The active database connection.
      * @param columnName The column to add.
      * @param columnType The SQL type definition for the column.
      * @throws SQLException if a database access error occurs.
@@ -226,22 +226,40 @@ public class DataInitializer implements ServletContextListener {
         }
 
         // A regular Staff account (Role_ID = 2) for testing the read-only role.
+        // And create 1000 user record 
+        String hashedPassowrd = PasswordUtils.hashPassword("user123");
+
         try (PreparedStatement ps = conn.prepareStatement(seedSql)) {
-            ps.setString(1, "STAFF001");
-            ps.setString(2, "Nguyen Van A");
-            ps.setDate(3, Date.valueOf(LocalDate.of(1998, 6, 15)));
-            ps.setBoolean(4, true);
-            ps.setString(5, "0987654321");
-            ps.setString(6, "user@example.com");
-            ps.setString(7, PasswordUtils.hashPassword("user123"));
-            ps.setString(8, "Human Resources");
-            ps.setString(9, "HR Staff");
-            ps.setBigDecimal(10, new BigDecimal("12000000"));
-            ps.setDate(11, Date.valueOf(LocalDate.of(2022, 3, 1)));
-            ps.setInt(12, 2); // Role_ID = 2 (Staff)
-            ps.setBoolean(13, true);
-            ps.executeUpdate();
-            System.out.println("Default staff user inserted.");
+
+            conn.setAutoCommit(false);
+
+            for (int i = 1; i <= 1000; i++) {
+                ps.setString(1, "STAFF" + i);
+                ps.setString(2, "Nguyen Van A" + i);
+                ps.setDate(3, Date.valueOf(LocalDate.of(1998, 6, 15)));
+                ps.setBoolean(4, true);
+                ps.setString(5, "0987654" + String.format("%03d", i));
+                ps.setString(6, "user" + i + "@example.com");
+                ps.setString(7, hashedPassowrd);
+                ps.setString(8, "Human Resources");
+                ps.setString(9, "HR Staff");
+                ps.setBigDecimal(10, new BigDecimal("12000000"));
+                ps.setDate(11, Date.valueOf(LocalDate.of(2022, 3, 1)));
+                ps.setInt(12, 2); // Role_ID = 2 (Staff)
+                ps.setBoolean(13, true);
+
+                ps.addBatch();
+
+                if (i % 200 == 0) {
+                    ps.executeBatch();
+                }
+            }
+            ps.executeBatch();
+            conn.commit();
+            System.out.println("Default 1000 staff user inserted.");
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
         }
     }
 

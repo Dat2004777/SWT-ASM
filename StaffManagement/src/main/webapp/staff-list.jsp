@@ -90,14 +90,30 @@
             </c:url>
             <nav>
                 <ul class="pagination justify-content-center">
-                    <li class="page-item ${pageResult.hasPrevious?'':'disabled'}"><a class="page-link"
-                                                                                     href="${pageUrl}&page=${pageResult.currentPage-1}">Previous</a></li>
-                        <c:forEach begin="1" end="${pageResult.totalPages}" var="p">
-                        <li class="page-item ${p==pageResult.currentPage?'active':''}"><a class="page-link"
-                                                                                          href="${pageUrl}&page=${p}">${p}</a></li>
-                        </c:forEach>
-                    <li class="page-item ${pageResult.hasNext?'':'disabled'}"><a class="page-link"
-                                                                                 href="${pageUrl}&page=${pageResult.currentPage+1}">Next</a></li>
+                    <li class="page-item ${pageResult.currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageUrl}&page=1">First</a>
+                    </li>
+
+                    <c:set var="adjacents" value="2" />
+                    <c:set var="startPage" value="${pageResult.currentPage - adjacents}" />
+                    <c:if test="${startPage < 1}">
+                        <c:set var="startPage" value="1" />
+                    </c:if>
+
+                    <c:set var="endPage" value="${pageResult.currentPage + adjacents}" />
+                    <c:if test="${endPage > pageResult.totalPages}">
+                        <c:set var="endPage" value="${pageResult.totalPages}" />
+                    </c:if>
+
+                    <c:forEach begin="${startPage}" end="${endPage}" var="p">
+                        <li class="page-item ${p == pageResult.currentPage ? 'active' : ''}">
+                            <a class="page-link" href="${pageUrl}&page=${p}">${p}</a>
+                        </li>
+                    </c:forEach>
+
+                    <li class="page-item ${pageResult.currentPage == pageResult.totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="${pageUrl}&page=${pageResult.totalPages}">Last</a>
+                    </li>
                 </ul>
             </nav>
         </div>
