@@ -81,4 +81,40 @@ public class EmployeeService {
         }
         return staffDAO.getStaffById(staffId);
     }
+    public List<String> updateStaff(Staff staff) {
+        List<String> errors = new java.util.ArrayList<>();
+
+        try {
+            // 1. Kiểm tra tính hợp lệ của dữ liệu (Validation)
+            // Tương tự như lúc Create, nhưng ta truyền vào staff.getStaffID() để bỏ qua chính nó khi check trùng lặp
+            if (staffDAO.isStaffCodeExists(staff.getStaffCode(), staff.getStaffID())) {
+                errors.add("Staff code already exists. Please choose another one.");
+            }
+            if (staffDAO.isEmailExists(staff.getEmail(), staff.getStaffID())) {
+                errors.add("Email already exists. Please choose another one.");
+            }
+            if (staffDAO.isPhoneNumberExists(staff.getPhoneNumber(), staff.getStaffID())) {
+                errors.add("Phone number already exists. Please choose another one.");
+            }
+
+            // (Bạn có thể thêm các hàm validate định dạng email, sđt bằng EmployeeValidator ở đây nếu cần)
+
+            // 2. Nếu không có lỗi nào, tiến hành gọi DAO để cập nhật
+            if (errors.isEmpty()) {
+                staffDAO.updateStaff(staff);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            errors.add("Lỗi hệ thống khi cập nhật nhân viên: " + e.getMessage());
+        }
+
+        return errors;
+    }
+    public void deleteStaff(int staffId) {
+        if (staffId <= 0) {
+            return;
+        }
+        // Vì yêu cầu của bạn là xóa cứng, ta chỉ cần gọi trực tiếp lệnh deleteStaff từ DAO
+        staffDAO.deleteStaff(staffId);
+    }
 }
