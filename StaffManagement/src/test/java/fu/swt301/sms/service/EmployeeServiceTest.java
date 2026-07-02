@@ -141,4 +141,61 @@ class EmployeeServiceTest {
         when(staffDAO.getStaffById(999)).thenReturn(null);
         assertNull(service.getStaffById(999));
     }
+
+    @Test
+    void updateStaff_validInput_updatesSuccessfully() throws Exception {
+        Staff s = validStaff();
+        s.setStaffID(1); // Cần có ID để update
+        when(staffDAO.isStaffCodeExists(eq(s.getStaffCode()), eq(s.getStaffID()))).thenReturn(false);
+        when(staffDAO.isEmailExists(eq(s.getEmail()), eq(s.getStaffID()))).thenReturn(false);
+        when(staffDAO.isPhoneNumberExists(eq(s.getPhoneNumber()), eq(s.getStaffID()))).thenReturn(false);
+        List<String> errors = service.updateStaff(s);
+        assertTrue(errors.isEmpty(), "Expected no validation errors, but got: " + errors);
+        verify(staffDAO, times(1)).updateStaff(s);
+    }
+
+    @Test
+    void updateStaff_duplicateStaffCode_returnsError() throws Exception {
+        Staff s = validStaff();
+        s.setStaffID(1);
+        when(staffDAO.isStaffCodeExists(eq(s.getStaffCode()), eq(s.getStaffID()))).thenReturn(true);
+        List<String> errors = service.updateStaff(s);
+        assertTrue(errors.contains("Staff code already exists. Please choose another one."));
+        verify(staffDAO, never()).updateStaff(s);
+    }
+
+    @Test
+    void updateStaff_duplicateEmail_returnsError() throws Exception {
+        Staff s = validStaff();
+        s.setStaffID(1);
+        when(staffDAO.isEmailExists(eq(s.getEmail()), eq(s.getStaffID()))).thenReturn(true);
+        List<String> errors = service.updateStaff(s);
+        assertTrue(errors.contains("Email already exists. Please choose another one."));
+        verify(staffDAO, never()).updateStaff(s);
+    }
+
+    @Test
+    void updateStaff_duplicatePhone_returnsError() throws Exception {
+        Staff s = validStaff();
+        s.setStaffID(1);
+        when(staffDAO.isPhoneNumberExists(eq(s.getPhoneNumber()), eq(s.getStaffID()))).thenReturn(true);
+        List<String> errors = service.updateStaff(s);
+        assertTrue(errors.contains("Phone number already exists. Please choose another one."));
+        verify(staffDAO, never()).updateStaff(s);
+    }
+
+    @Test
+    void deleteStaff_hardDelete_callsDaoDelete() {
+        int targetStaffId = 10;
+        service.deleteStaff(targetStaffId);
+        verify(staffDAO, times(1)).deleteStaff(targetStaffId);
+        verify(staffDAO, never()).updateStaff(any());
+    }
+
+    @Test
+    void deleteStaff_zeroOrNegativeId_doesNotCallDao() {
+        service.deleteStaff(0);
+        service.deleteStaff(-5);
+        verify(staffDAO, never()).deleteStaff(anyInt());
+    }
 }

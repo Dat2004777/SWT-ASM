@@ -110,6 +110,9 @@
             </div>
         </div>
         <button type="submit" class="btn btn-primary">${empty staff ? 'Create' : 'Update'}</button>
+        <c:if test="${not empty staff && staff.staffID != 0}">
+            <button type="button" id="btnDelete" class="btn btn-danger" onclick="if(confirm('Are you sure?')) { window.location.href='staff-crud?action=delete&id=${staff.staffID}'; }">Delete</button>
+        </c:if>
         <a href="staff-list" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
